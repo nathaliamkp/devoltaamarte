@@ -1,23 +1,27 @@
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public abstract class EquipamentoExplorador implements Movel{
 
     private Posicao posicao;
-    private String trajetoria;
+    protected String trajetoria;
+    private String relatorioPosicao;
+    private List<Posicao> posicoes;
 
-    public EquipamentoExplorador(Posicao posicao, String trajetoria, Planalto planalto) throws Exception {
+
+    public EquipamentoExplorador(Posicao posicao, String trajetoria){
         this.posicao = posicao;
-        verificaSePosicaoEValida(planalto);
         this.trajetoria = trajetoria;
+        this.posicoes = new ArrayList<>();
+        adicionaPosicao();
     }
 
-    private void verificaSePosicaoEValida(Planalto planalto) throws Exception {
-        if (posicao.getCoordenadas().getX() > planalto.getCoordenadasMaximas().getX() ||
-                posicao.getCoordenadas().getY() > planalto.getCoordenadasMaximas().getY() ){
-            throw new Exception();
-        }
-    }
 
     @Override
-    public void mover() throws Exception {
+    public void mover(){
         String direcao = this.posicao.getDirecao();
 
         switch (direcao){
@@ -33,15 +37,13 @@ public abstract class EquipamentoExplorador implements Movel{
             case "E":
                 atualizaEixo("x", 1);
                 break;
-            default:
-                throw new Exception();
         }
 
     }
 
     @Override
     public void mudaDirecao(char ordemDeMudarDirecao) {
-        String direcaoAtual = posicao.getDirecao();
+        String direcaoAtual = this.posicao.getDirecao();
         String novaDirecao = null;
         switch (direcaoAtual) {
             case "N":
@@ -66,12 +68,16 @@ public abstract class EquipamentoExplorador implements Movel{
     }
 
     @Override
-    public void cumprirTrajetoria(Planalto planalto) throws Exception {
-        for(int i = 0; i < trajetoria.length(); i++){
-            switch (trajetoria.charAt(i)){
+    public void cumpraTrajetoria(Planalto planalto, List<Movel> moveis){
+        for(int i = 0; i < this.trajetoria.length(); i++){
+            switch (this.trajetoria.charAt(i)){
                 case 'M':
                     mover();
-                    verificaSePosicaoEValida(planalto);
+                        if(validaNovaPosicao(moveis, i, planalto)){
+                            adicionaPosicao();
+                        }else{
+                            this.posicao = this.posicoes.get(posicoes.size()-1);
+                        }
                     break;
                 case 'R':
                     mudaDirecao('R');
@@ -79,12 +85,26 @@ public abstract class EquipamentoExplorador implements Movel{
                 case 'L':
                     mudaDirecao('L');
                     break;
-                default:
-                    throw new RuntimeException("Algum equipamento explorador possui uma trajetória inválida");
             }
-
         }
     }
+
+
+
+
+    private boolean validaNovaPosicao(List<Movel> moveis, int i, Planalto planalto){
+        boolean posicaoValida = true;
+        validaPosicao(planalto);
+        for (Movel movel : moveis) {
+            if (this.posicao.getCoordenadas().toString().equals(movel.retornaCoordenadas())) {
+                colide();
+                this.trajetoria = this.trajetoria.substring(i);
+                posicaoValida = false;
+            }
+        }
+       return posicaoValida;
+    }
+
 
     @Override
     public void atualizaEixo(String eixo, int valor) {
@@ -95,13 +115,41 @@ public abstract class EquipamentoExplorador implements Movel{
         else if(eixo.equals("y")){
              coordenadas = new Coordenadas(this.posicao.getCoordenadas().getX(), this.posicao.getCoordenadas().getY() + valor);
         }
-        posicao = new Posicao(coordenadas, this.posicao.getDirecao());
+        this.posicao = new Posicao(coordenadas, this.posicao.getDirecao());
 
     }
 
-   public String dadosPosicao(){
-        String stringPosicao = posicao.getCoordenadas().getX() + " " +
-                posicao.getCoordenadas().getY() + " " + posicao.getDirecao();
-        return stringPosicao;
+    @Override
+    public String exibaPosicaoFinal(){
+        this.relatorioPosicao = this.posicao.getCoordenadas().getX() + " " +
+                this.posicao.getCoordenadas().getY() + " " + this.posicao.getDirecao();
+        return this.relatorioPosicao;
    }
+
+    @Override
+    public void validaPosicao(Planalto planalto) {
+        if(this.posicao.getCoordenadas().getY() > planalto.getCoordenadasMaximas().getY() ||
+                this.posicao.getCoordenadas().getX() > planalto.getCoordenadasMaximas().getX()){
+            throw new RuntimeException("A trajetória desse equipamento excede o Planalto. Por segurança a exploração foi cancelada");
+        }
+    }
+
+    @Override
+    public void colide() {
+
+    }
+
+    @Override
+    public String retornaCoordenadas() {
+        return this.posicao.getCoordenadas().toString();
+    }
+
+    public List<Posicao> getPosicoes(){
+        return Collections.unmodifiableList(this.posicoes);
+    }
+
+    private void adicionaPosicao(){
+        this.posicoes.add(this.posicao);
+    }
+
 }
