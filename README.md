@@ -7,7 +7,7 @@ Para tanto, será preciso que desenvolva um software capaz de fazer tais verific
 ## Premissas:
 
 Aqui foi assumido que é possível existir um equipamento explorador diferente da sonda e que uma caracteristica de todas as sondas é que elas só podem se movimentar 10 vezes.
-No momento dessa missão exploratória não há outro tipo de equipameto disponível a não ser a sonda, portanto, se a trajetória informada para algum equipamento não for compatível com a de uma sonda, não será possível realizar a exploração. Quem sabe no futuro outros equipamentos não poderão ser usados? 
+No momento dessa missão exploratória não há outro tipo de equipameto disponível a não ser a sonda, portanto, se a trajetória informada para algum equipamento não for compatível com a de uma sonda, não será possível realizar a exploração. 
 No momento dessa exploração apenas equipamentos moveis serão lançados.
 Essa exploração só contará também com equipamentos exploradores, não existindo, por enquanto, a possibilidade de enviar um equipamento que não seja desse tipo. 
-Foi assumido aqui que as sondas serão lançadas uma de cada vez e recuperadas assim que terminarem sua trajetória, não havendo assim a posibilidade de colisão entre as sondas.
+Foi assumido aqui que as sondas serão lançadas uma de cada vez. Após cumprir sua trajetória, ela fica inativa. Caso aconteça de uma sonda colidir com alguma sonda inativada, a sonda para, seu status fica inativo e ela não será capaz de cumprir o restante da sua trajetória.
